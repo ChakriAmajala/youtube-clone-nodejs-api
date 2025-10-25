@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'youtube-node-api'
         IMAGE_TAG = 'latest'
         HOST_PORT = "8001"         // Port accessible externally
-        PORT = "4000"    // Node.js app port inside container //external port for app
+        APP_PORT = "4000"          // Node.js app port inside container
     }
 
     stages {
@@ -44,7 +44,7 @@ pipeline {
         stage('Login to DockerHub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh "echo $PASS | docker login -u $USER --password-stdin"
+                    sh "echo \$PASS | docker login -u \$USER --password-stdin"
                 }
             }
         }
@@ -55,22 +55,20 @@ pipeline {
             }
         }
 
+        stage('Deploy Container') {
+            steps {
+                sh """
+                    docker rm -f ${IMAGE_NAME} || true
+                    docker run -d --name ${IMAGE_NAME} -p ${HOST_PORT}:${APP_PORT} -e PORT=${APP_PORT} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                """
+            }
+        }
 
-stage('Deploy Container') {
-    steps {
-        sh """
-            docker rm -f ${IMAGE_NAME} || true
-            docker run -d --name ${IMAGE_NAME} -p ${HOST_PORT}:${PORT} -e PORT=${PORT} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-        """
-    }
-}
-post {
-    always {
-        echo "Pipeline finished and updated! Check http://35.154.206.52:${HOST_PORT}"
-    }
-}
+    } // end of stages
 
-
-
+    post {
+        always {
+            echo "Pipeline finished and updated! Check http://<YOUR_SERVER_IP>:${HOST_PORT}"
+        }
     }
 }
