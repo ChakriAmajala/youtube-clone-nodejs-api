@@ -55,14 +55,14 @@ pipeline {
             }
         }
 
-        stage('Deploy Container') {
-            steps {
-                sh """
-                    docker rm -f ${IMAGE_NAME} || true
-                    docker run -d --name ${IMAGE_NAME} -p ${HOST_PORT}:${APP_PORT} -e PORT=${APP_PORT} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                """
-            }
-        }
+stage('Deploy Container') {
+    steps {
+        sh """
+            docker rm -f youtube-node-api || true
+            docker run -d --name youtube-node-api -p 8001:4000 -e PORT=4000 chakriamajaladocker/youtube-node-api:latest
+        """
+    }
+}
 
     } // end of stages
 
