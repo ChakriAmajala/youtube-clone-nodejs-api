@@ -57,17 +57,18 @@ pipeline {
 
 stage('Deploy Container') {
     steps {
-        sh """
-            docker rm -f ${IMAGE_NAME} || true
-            docker run -d --name ${IMAGE_NAME} \
-            -p ${HOST_PORT}:${PORT} \
-            -e PORT=${PORT} \
-            -e MONGO_URI='mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/<dbname>' \
-            ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-        """
+        withCredentials([string(credentialsId: 'mongo-uri', variable: 'MONGO_URI')]) {
+            sh """
+                docker rm -f ${IMAGE_NAME} || true
+                docker run -d --name ${IMAGE_NAME} \
+                -p ${HOST_PORT}:${PORT} \
+                -e PORT=${PORT} \
+                -e MONGO_URI=${MONGO_URI} \
+                ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+            """
+        }
     }
 }
-
     } // end of stages
 
     post {
