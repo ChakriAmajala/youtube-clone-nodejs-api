@@ -6,7 +6,7 @@ pipeline {
         IMAGE_NAME = 'youtube-node-api'
         IMAGE_TAG = 'latest'
         HOST_PORT = "8001"         // Port accessible externally
-        CONTAINER_PORT = "3000"    // Node.js app port inside container
+        PORT = "3000"    // Node.js app port inside container //external port for app
     }
 
     stages {
@@ -60,7 +60,7 @@ stage('Deploy Container') {
     steps {
         sh '''
             docker rm -f youtube-node-api || true
-            docker run -d --name youtube-node-api -p 8001:3000 chakriamajaladocker/youtube-node-api:latest
+            docker run -d --name youtube-node-api -p 8001:8080 chakriamajaladocker/youtube-node-api:latest
         '''
     }
 }
