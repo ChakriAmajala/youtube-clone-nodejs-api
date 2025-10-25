@@ -1,13 +1,18 @@
-FROM node:18-alpine3.17
+# Use Node.js 18 Alpine
+FROM node:18-alpine
 
+# Set working directory
 WORKDIR /app
 
-COPY package*.json .
-
+# Copy package files and install dependencies
+COPY package*.json ./
 RUN npm install
 
+# Copy rest of the code
 COPY . .
 
-EXPOSE 3001
+# Expose port
+ENV PORT=3000
 
-CMD ["npm", "run", "dev"]
+# Start the app
+CMD ["node", "app.js"]
