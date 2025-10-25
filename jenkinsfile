@@ -5,8 +5,7 @@ pipeline {
         DOCKERHUB_USER = 'chakriamajaladocker'
         IMAGE_NAME = 'youtube-node-api'
         IMAGE_TAG = 'latest'
-        HOST_PORT = "8001"
-        CONTAINER_PORT = "3000"
+        CONTAINER_PORT = "3000"    //for external pp
     }
 
     stages {
@@ -63,6 +62,15 @@ pipeline {
                 '''
             }
         }
+        stage('Docker Swarm Deploy') {
+            steps {
+                sh '''
+                    docker service update --image ${IMAGE_NAME}:${IMAGE_TAG} youtubepage || \
+                    docker service create --name gameserv -p 8009:8080 --replicas 10 ${IMAGE_NAME}:${IMAGE_TAG}
+                '''
+            }
+        }
+
 
     }
 }
