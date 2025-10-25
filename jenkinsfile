@@ -64,14 +64,13 @@ stage('Deploy Container') {
         """
     }
 }
-
-
-    post {
-        always {
-            echo "Pipeline finished and updated! Check http://35.154.206.52:3000"
-
-        }
+post {
+    always {
+        echo "Pipeline finished and updated! Check http://35.154.206.52:${HOST_PORT}"
     }
+}
+
+
 
     }
 }
