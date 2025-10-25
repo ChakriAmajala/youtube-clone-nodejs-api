@@ -2,42 +2,49 @@ pipeline {
     agent any
 
     environment {
-        WORK_DIR = "/var/lib/jenkins/workspace/youtubepage"
         DOCKERHUB_USER = 'chakriamajaladocker'
-        IMAGE_NAME = 'youtubepage'
+        IMAGE_NAME = 'youtube-node-api'
         IMAGE_TAG = 'latest'
         HOST_PORT = "8001"
-        CONTAINER_PORT = "80"
+        CONTAINER_PORT = "3000"
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git branch: 'master', url: 'https://github.com/ChakriAmajala/go-web-app-devops.git'
+                git branch: 'master', url: 'https://github.com/ChakriAmajala/youtube-clone-nodejs-api.git'
             }
         }
 
-        stage('Maven Build') {
+        stage('Install Dependencies') {
             steps {
-                sh 'mvn clean package'
+                sh '''
+                    echo "Installing Node.js dependencies..."
+                    npm install
+                '''
+            }
+        }
+
+        stage('Run Tests (optional)') {
+            steps {
+                sh '''
+                    echo "Running tests..."
+                    npm test || echo "No test script defined"
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                script {
-                    sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
-                }
+                sh "docker build -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
             }
         }
 
         stage('Login to DockerHub') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                        sh "echo $PASS | docker login -u $USER --password-stdin"
-                    }
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh "echo $PASS | docker login -u $USER --password-stdin"
                 }
             }
         }
@@ -50,26 +57,12 @@ pipeline {
 
         stage('Deploy Container') {
             steps {
-                script {
-                    // Stop & remove existing container if running
-                    sh "docker rm -f ${IMAGE_NAME} || true"
-                    // Run new container
-                    sh "docker run -d --name ${IMAGE_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-                }
-            }
-        }
-
-        stage('Docker Swarm Deploy') {
-            steps {
-                script {
-                    sh '''
-                        docker service update --image ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME} || \
-                        docker service create --name ${IMAGE_NAME} -p 8004:8080 --replicas 2 ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-                    '''
-                }
+                sh '''
+                    docker rm -f ${IMAGE_NAME} || true
+                    docker run -d --name ${IMAGE_NAME} -p ${HOST_PORT}:${CONTAINER_PORT} ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+                '''
             }
         }
 
     }
 }
-
