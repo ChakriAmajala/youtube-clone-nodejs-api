@@ -57,18 +57,17 @@ pipeline {
 
 stage('Deploy Container') {
     steps {
-        withCredentials([string(credentialsId: 'mongo-uri', variable: 'MONGO_URI')]) {
-            sh """
-                docker rm -f ${IMAGE_NAME} || true
-                docker run -d --name ${IMAGE_NAME} \
-                -p ${HOST_PORT}:${PORT} \
-                -e PORT=${PORT} \
-                -e MONGO_URI=${MONGO_URI} \
-                ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
-            """
-        }
+        sh """
+            echo "Deploying container without MongoDB..."
+            docker rm -f ${IMAGE_NAME} || true
+            docker run -d --name ${IMAGE_NAME} \
+            -p ${HOST_PORT}:${APP_PORT} \
+            -e PORT=${APP_PORT} \
+            ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}
+        """
     }
 }
+
     } // end of stages
 
     post {
