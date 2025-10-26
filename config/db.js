@@ -1,13 +1,11 @@
-const mongoose = require('mongoose')
-
-mongoose.set('strictQuery', true)
+const mongoose = require('mongoose');
 
 const DBconnection = async () => {
-	const conn = await mongoose.connect(process.env.MONGO_URI).catch((err) => {
-		console.log(`For some reasons we couldn't connect to the DB`.red, err)
-	})
+  try {
+    console.log("Skipping MongoDB connection (no DB configured).");
+  } catch (err) {
+    console.log("Skipping DB connection due to error:", err);
+  }
+};
 
-	console.log(`MongoDB Connected: ${conn.connection.host}`.cyan.underline.bold)
-}
-
-module.exports = DBconnection
+module.exports = DBconnection;
